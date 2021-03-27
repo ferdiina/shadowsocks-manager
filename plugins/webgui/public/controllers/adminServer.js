@@ -165,6 +165,18 @@ app.controller('AdminServerController', ['$scope', '$http', '$state', 'moment', 
       if(!$scope.menuSearch.text) { return true; }
       return serverName.toString().includes($scope.menuSearch.text);
     };
+    $scope.serverColor = server => {
+      if(server.status === -1) {
+        return {
+          background: 'red-100', 'border-color': 'blue-300',
+        };
+      } else if(server.isGfw) {
+        return {
+          background: 'red-50', 'border-color': 'blue-300',
+        };
+      }
+      return {};
+    };
   }
 ])
 .controller('AdminServerPageController', ['$scope', '$state', '$stateParams', '$http', 'moment', '$mdDialog', 'adminApi', '$localStorage', '$mdMedia', '$interval', 'banDialog',
@@ -219,6 +231,16 @@ app.controller('AdminServerController', ['$scope', '$http', '$state', 'moment', 
         $scope.getServerInfoError = false;
       }).catch(() => {
         $scope.getServerInfoError = true;
+        $http.get(`/api/admin/server/${ serverId }`, {
+          params: {
+            noPort: true,
+          },
+        }).then(success => {
+          $scope.server = success.data;
+          $scope.isSS = $scope.server.type === 'Shadowsocks';
+          $scope.isWG = $scope.server.type === 'WireGuard';
+          $scope.isTJ = $scope.server.type === 'Trojan';
+        });
       });
     };
     getServerInfo();

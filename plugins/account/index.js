@@ -6,6 +6,7 @@ const macAccount = appRequire('plugins/macAccount/index');
 const orderPlugin = appRequire('plugins/webgui_order');
 const accountFlow = appRequire('plugins/account/accountFlow');
 const webguiTag = appRequire('plugins/webgui_tag');
+const redis = appRequire('init/redis').redis;
 
 const runCommand = async cmd => {
   const exec = require('child_process').exec;
@@ -38,9 +39,13 @@ const addAccount = async (type, options) => {
       userId: options.user,
       port: options.port,
       password: options.password,
+      data: options.flow > 0 ? JSON.stringify({
+        flow: options.flow,
+      }) : null,
       status: 0,
       server: options.server ? options.server : null,
       autoRemove: 0,
+      multiServerFlow: options.multiServerFlow || 0,
       key,
     });
     await accountFlow.add(accountId);
@@ -93,6 +98,7 @@ const getAccount = async (options = {}) => {
     'account_plugin.id',
     'account_plugin.type',
     'account_plugin.orderId',
+    'webgui_order.name as orderName',
     'account_plugin.userId',
     'account_plugin.server',
     'account_plugin.port',
@@ -108,6 +114,7 @@ const getAccount = async (options = {}) => {
     'user.email as user',
   ])
   .leftJoin('user', 'user.id', 'account_plugin.userId')
+  .leftJoin('webgui_order', 'webgui_order.id', 'account_plugin.orderId')
   .where(where)
   .orderBy('account_plugin.id', options.orderById ? 'desc' : 'asc');
   return account;
@@ -159,6 +166,10 @@ const delAccount = async id => {
     });
   });
   await accountFlow.del(id);
+  if (accountInfo.userId) {
+    await redis.setnx(`Account:${accountInfo.userId}`, `${accountInfo.port}:${accountInfo.password}`);
+    await redis.expire(`Account:${accountInfo.userId}`, 86400);
+  }
   return result;
 };
 
@@ -181,7 +192,13 @@ const editAccount = async (id, options) => {
     update.server = options.server ? JSON.stringify(options.server) : null;
   }
   if(options.type === 1) {
-    update.data = null;
+    if(options.flow && options.flow > 0) {
+      update.data = JSON.stringify({
+        flow: options.flow,
+      });
+    } else {
+      update.data = null;
+    }
   } else if(options.type >= 2 && options.type <= 5) {
     update.data = JSON.stringify({
       create: options.time || Date.now(),

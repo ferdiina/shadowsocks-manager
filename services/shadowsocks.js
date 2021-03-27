@@ -176,7 +176,7 @@ const compareWithLastFlow = async (flow, lastFlow) => {
   const realFlow = {};
   if(!lastFlow) {
     for(const f in flow) {
-      if(flow[f] <= 0) { delete flow[f]; }
+      if(flow[f] <= 768) { delete flow[f]; }
     }
     return flow;
   }
@@ -203,7 +203,7 @@ const compareWithLastFlow = async (flow, lastFlow) => {
     return flow;
   }
   for(const r in realFlow) {
-    if(realFlow[r] <= 0) { delete realFlow[r]; }
+    if(realFlow[r] <= 768) { delete realFlow[r]; }
   }
   return realFlow;
 };
@@ -340,7 +340,7 @@ const getGfwStatus = () => {
     method: 'GET',
     timeout: 8000 + isGfw * 2000,
   }, res => {
-    if(res.statusCode === 200) {
+    if(res.statusCode >= 200 && res.statusCode < 400) {
       isGfw = 0;
     }
     res.setEncoding('utf8');

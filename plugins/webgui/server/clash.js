@@ -1,6 +1,6 @@
 module.exports = {
-  Proxy: [],
-  "Proxy Group": [
+  proxies: [],
+  "proxy-groups": [
     {
       "name": "🔰国外流量",
       "type": "select",
@@ -65,7 +65,7 @@ module.exports = {
       ]
     }
   ],
-  "Rule": [
+  rules: [
     "DOMAIN-SUFFIX,smtp,DIRECT",
     "DOMAIN-KEYWORD,aria2,DIRECT",
     "DOMAIN-SUFFIX,ampproject.org,🔰国外流量",
@@ -1176,10 +1176,4 @@ module.exports = {
     "GEOIP,CN,DIRECT",
     "MATCH,⚓️其他流量"
   ],
-  'allow-lan': false,
-  'external-controller': '127.0.0.1:9090',
-  'log-level': 'info',
-  mode: 'Rule',
-  port: 7890,
-  'socks-port': 1080,
 };

@@ -14,6 +14,8 @@ app.controller('AdminAccountController', ['$scope', '$state', '$mdMedia', '$http
           unlimit: true,
           mac: true,
           orderId: 0,
+          hasUser: true,
+          noUser: true,
         },
       };
     }
@@ -167,9 +169,11 @@ app.controller('AdminAccountController', ['$scope', '$state', '$mdMedia', '$http
       adminApi.getServerPortData(serverId, accountId).then(success => {
         $scope.serverPortFlow = success.serverPortFlow;
         $scope.lastConnect = success.lastConnect;
-        let maxFlow = 0;
-        if($scope.account.data) {
-          server.isFlowOutOfLimit = (($scope.account.data.flow + $scope.account.data.flowPack) <= $scope.serverPortFlow);
+        // let maxFlow = 0;
+        if($scope.account.data && $scope.account.data.flow > 0) {
+          server.isFlowOutOfLimit = (($scope.account.data.flow + ($scope.account.data.flowPack || 0)) <= $scope.serverPortFlow);
+        } else {
+          server.isFlowOutOfLimit = false;
         }
       });
       $scope.getChartData(serverId);
@@ -572,7 +576,7 @@ app.controller('AdminAccountController', ['$scope', '$state', '$mdMedia', '$http
     const setServers = () => {
       if(!$scope.account.accountServerObj) { return; }
       const server = Object.keys($scope.account.accountServerObj).map(m => $scope.account.accountServerObj[m] ? +m : null).filter(f => f);
-      $scope.account.server = ($scope.account.accountServer && +$scope.account.type > 1) ? server : null;
+      $scope.account.server = $scope.account.accountServer ? server : null;
     };
     $scope.$watch('account.accountServerObj', () => {
       setServers();
@@ -672,6 +676,9 @@ app.controller('AdminAccountController', ['$scope', '$state', '$mdMedia', '$http
         $scope.account.limit = success[1].data.data.limit;
         $scope.account.flow = success[1].data.data.flow;
         $scope.account.flowStr = $filter('flowNum2Str')($scope.account.flow);
+      } else {
+        $scope.account.flow = success[1].data.data ? success[1].data.data.flow : 0;
+        $scope.account.flowStr = $filter('flowNum2Str')($scope.account.flow);
       }
       $scope.account.server = success[1].data.server;
       $scope.account.accountServer = !!$scope.account.server;
@@ -751,7 +758,7 @@ app.controller('AdminAccountController', ['$scope', '$state', '$mdMedia', '$http
     const setServers = () => {
       if(!$scope.account.accountServerObj) { return; }
       const server = Object.keys($scope.account.accountServerObj).map(m => $scope.account.accountServerObj[m] ? +m : null).filter(f => f);
-      $scope.account.server = ($scope.account.accountServer && +$scope.account.type > 1) ? server : null;
+      $scope.account.server = $scope.account.accountServer ? server : null;
     };
     $scope.$watch('account.accountServerObj', () => {
       setServers();

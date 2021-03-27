@@ -175,6 +175,7 @@ app
   ($scope, $state, userApi, markdownDialog, $sessionStorage, autopopDialog) => {
     $scope.setTitle('首页');
     $scope.notices = [];
+    $scope.otherNotices = {};
     userApi.getNotice().then(success => {
       $scope.notices = success;
       if(!$sessionStorage.showNotice) {
@@ -184,6 +185,16 @@ app
           autopopDialog.show(autopopNotice);
         }
       }
+      $scope.notices.forEach(notice => {
+        if(notice.title.match(/^\[([\s\S]{1,})\]([\s\S]{1,})/)) {
+          const [ match, category, title ] = notice.title.match(/^\[([\s\S]{1,})\]([\s\S]{1,})/);
+          if(!$scope.otherNotices[category]) {
+            $scope.otherNotices[category] = [];
+          }
+          $scope.otherNotices[category].push({ ...notice, ...{ title } });
+        }
+      });
+      $scope.notices = $scope.notices.filter(f => !f.title.match(/^\[([\s\S]{1,})\]([\s\S]{1,})/));
     });
     userApi.getUsage().then(success => {
       $scope.usage = success;
@@ -237,8 +248,14 @@ app
     const setAccountServerList = (account, server) => {
       account.forEach(a => {
         a.serverList = $scope.servers.filter(f => {
-          return !a.server || a.server.indexOf(f.id) >= 0;
+          return !a.server || a.server.indexOf(f.id) >= 0 || $scope.config.showAllServer;
         });
+        if(a.server && $scope.config.showAllServer) {
+          a.serverList.sort((f, e) => {
+            if(a.server.indexOf(f.id) >= 0 && a.server.indexOf(e.id) < 0) { return -1; }
+            return 1;
+          });
+        }
       });
     };
     setAccountServerList($scope.account, $scope.servers);
@@ -319,8 +336,10 @@ app
       userApi.getServerPortData(account, serverId).then(success => {
         account.lastConnect = success.lastConnect;
         account.serverPortFlow = success.flow;
-        if(account.data) {
+        if(account.data && account.data.flow > 0) {
           account.isFlowOutOfLimit[serverId] = ((account.data.flow + account.data.flowPack) <= account.serverPortFlow);
+        } else {
+          account.isFlowOutOfLimit[serverId] = false;
         }
       });
       account.serverInfo = $scope.servers.filter(f => {
@@ -389,7 +408,7 @@ app
       };
     };
     $scope.isAccountOutOfDate = account => {
-      if(account.type >=2 && account.type <= 5) {
+      if(account.type >= 2 && account.type <= 5) {
         return Date.now() >= account.data.expire;
       } else {
         return false;

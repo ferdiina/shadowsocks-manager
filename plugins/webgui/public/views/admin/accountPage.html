@@ -3,8 +3,8 @@
         <md-card>
             <md-card-header>
                 <md-card-header-text>
-                    <span class="md-title">{{ account.port || '...' }} <span ng-if="account.active === 0" style="color: #a33;">未激活</span></span>
-                    <span class="md-subhead" ng-click="toUserPage(account.userId)">{{ account.user || account.password || '...' }}</span>
+                    <span class="md-title">{{ account.port || '...' }} <span ng-if="account.orderName" style="color: #666; font-size: 0.8em;">{{account.orderName}}</span><span ng-if="account.active === 0" style="color: #a33; font-size: 0.8em;">未激活</span></span>
+                    <span class="md-subhead hover-mouse" ng-click="toUserPage(account.userId)">{{ account.user || account.password || '...' }}</span>
                 </md-card-header-text>
             </md-card-header>
         </md-card>
@@ -73,13 +73,13 @@
                             <md-divider ng-show="isSS(server)"></md-divider>
                             <md-list-item ng-show="isWG(server)">
                                 <div flex layout="row" layout-align="space-between center">
-                                    <div flex="40" translate>公钥：</div><div flex="60" style="text-align:right; overflow: hidden; text-overflow: ellipsis; color: #666; font-size: 0.8em;">{{ account.publicKey }}</div>
+                                    <div flex="40" translate>公钥：</div><div flex="60" style="text-align:right; overflow: hidden; text-overflow: ellipsis; color: #666; font-size: 0.8em; font-family: 'Courier New', Consolas, monospace;">{{ account.publicKey }}</div>
                                 </div>
                             </md-list-item>
                             <md-divider ng-show="isWG(server)"></md-divider>
                             <md-list-item ng-show="isWG(server)">
                                 <div flex layout="row" layout-align="space-between center">
-                                    <div flex="40" translate>私钥：</div><div flex="60" style="text-align:right; overflow: hidden; text-overflow: ellipsis; color: #666; font-size: 0.8em;">{{ account.privateKey }}</div>
+                                    <div flex="40" translate>私钥：</div><div flex="60" style="text-align:right; overflow: hidden; text-overflow: ellipsis; color: #666; font-size: 0.8em; font-family: 'Courier New', Consolas, monospace;">{{ account.privateKey }}</div>
                                 </div>
                             </md-list-item>
                             <md-divider ng-show="isWG(server)"></md-divider>
@@ -87,8 +87,8 @@
                                 <div flex layout="row" layout-align="space-between center">
                                     <div flex="40" translate>流量：</div>
                                     <div flex="60" style="text-align:right">
-                                        <span ng-if="account.type === 1" translate>不限量</span>
-                                        <span ng-if="account.type >=2 && account.type <= 5"><span ng-style="server.isFlowOutOfLimit ? {color: '#a33'} : {color: '#333'}">{{ serverPortFlow | flow }}</span> / {{ account.data.flow + account.data.flowPack | flow}}</span>
+                                        <!-- <span ng-if="account.type === 1" translate><span style="color: #333">{{ serverPortFlow | flow }}</span> / 不限量</span> -->
+                                        <span ng-if="account.type >= 1 && account.type <= 5"><span ng-style="server.isFlowOutOfLimit ? {color: '#a33'} : {color: '#333'}">{{ serverPortFlow | flow }}</span> / <span ng-show="account.data.flow > 0">{{ account.data.flow + account.data.flowPack | flow}}</span><span ng-show="!account.data || account.data.flow <= 0">∞</span></span>
                                     </div>
                                 </div>
                             </md-list-item>
